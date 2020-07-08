@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Tile constants
 const (
 	// The # of tiles in each suit
 	Winds         int = 16
@@ -65,6 +66,11 @@ const (
 	SevenPin = '🀟'
 	EightPin = '🀠'
 	NinePin  = '🀡'
+
+	// Red Fives (First five in each suit)
+	MAN_RED_FIVE = 44
+	SOU_RED_FIVE = 80
+	PIN_RED_FIVE = 116
 )
 
 type Tile struct {
@@ -84,6 +90,8 @@ type Player struct {
 	discard Discard
 }
 
+// SimpleSet compiles slices of Mahjong tiles into a basic 'one of each tile' set.
+// It returns the set, which allows an unmutated set to be worked with where necessary.
 func SimpleSet() []rune {
 	var (
 		// Build a set of unicode tiles
@@ -100,6 +108,8 @@ func SimpleSet() []rune {
 	return SetTiles
 }
 
+// FullSet compiles slices of Mahjong tiles into a complete 'four of each tile' set.
+// It returns the set, which allows an unmutated set to be worked with where necessary.
 func FullSet() []int {
 	FullSet := make([]int, 136)
 	for i := 0; i < len(FullSet)/4; i++ {
@@ -111,6 +121,7 @@ func FullSet() []int {
 	return FullSet
 }
 
+// GetUnicodeTile takes an integer from a full set (0-135) and returns the associated tile rune (a unicode mahjong tile).
 func GetUnicodeTile(tile int) rune {
 	SetTiles := SimpleSet()
 	tileValue := tile / 4
@@ -118,6 +129,8 @@ func GetUnicodeTile(tile int) rune {
 	return tileCode
 }
 
+// ShuffleSet takes set (a slice of integers) and shuffles it.
+// It returns the ShuffledSet.
 func ShuffleSet(set []int) []int {
 	ShuffledSet := set
 	rand.Seed(time.Now().UnixNano())
@@ -125,21 +138,86 @@ func ShuffleSet(set []int) []int {
 	return ShuffledSet
 }
 
+// AssignSeats takes set (a slice of strings) and shuffles it.
+// It returns the Seats.
+func AssignSeats(set []string) []string {
+	Seats := set
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(Seats), func(i, j int) { Seats[i], Seats[j] = Seats[j], Seats[i] })
+	return Seats
+}
+
+func Deal() []int {
+	Tiles := ShuffleSet(FullSet())
+	// Number of Tiles in each wall
+	var EastWall, SouthWall, WestWall, NorthWall = 34, 34, 34, 34
+	var EastStart, SouthStart, WestStart, NorthStart = 0, 34, 68, 102
+
+	//Deal Pseudocode
+	//Four Walls: 17x2 Tiles
+	//Roll Dice: 1:East 2:South 3:West 4:North
+	//Roll Dice: Count backwards from the end (17) to dice count.
+	//Begin Deal: 2x2 to East, 2x2 to South, 2x2 to West, 2x2 to North, repeat 3 times (12 tiles)
+	//Dead wall: 7x2, starting from where the deal began.
+	//Dora Indicator: top tile, 3 from the right of the dead wall. (ooooXoo)
+}
+
+func Draw(walls []int) []int {
+	//Take first tile out of set
+	//Add it to player hand
+	//Return remaining set
+}
+
+func Discard() {
+
+}
+
+func CallChi() {
+
+}
+
+func CallPon() {
+
+}
+
+func CallKan() {
+
+}
+
+func ClosedKan() {
+
+}
+
+func CallRon() {
+
+}
+
+func CallTsumo() {
+
+}
+
 func main() {
 	SimpleSet()
+
 	fmt.Println("SimpleSet")
 	for _, c := range SimpleSet() {
-		fmt.Printf("%q ", c)
+		fmt.Printf("%q", c)
 	}
 	fmt.Println("\nEnd Simpleset")
+
 	fmt.Println("FullSet")
 	for _, c := range FullSet() {
-		fmt.Printf("%q ", GetUnicodeTile(c))
+		fmt.Printf("%q", GetUnicodeTile(c))
 	}
 	fmt.Println("\nEnd FullSet")
+
 	fmt.Println("ShuffledSet")
 	for _, c := range ShuffleSet(FullSet()) {
-		fmt.Printf("%q ", GetUnicodeTile(c))
+		fmt.Printf("%q", GetUnicodeTile(c))
 	}
 	fmt.Println("\nEnd ShuffledSet")
+
+	fmt.Printf("Man Red Five: %q\n", GetUnicodeTile(MAN_RED_FIVE))
+	fmt.Printf("Pin Red Five: %q\n", GetUnicodeTile(PIN_RED_FIVE))
+	fmt.Printf("Sou Red Five: %q\n", GetUnicodeTile(SOU_RED_FIVE))
 }
