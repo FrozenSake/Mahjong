@@ -67,11 +67,11 @@ const (
 
 var (
 	// Build a set of unicode tiles
-	WindTiles   = append((make([]rune, 4)), East, South, West, North)
-	DragonTiles = append((make([]rune, 3)), RedDragon, GreenDragon, WhiteDragon)
-	ManTiles    = append((make([]rune, 9)), OneMan, TwoMan, ThreeMan, FourMan, FiveMan, SixMan, SevenMan, EightMan, NineMan)
-	SouTiles    = append((make([]rune, 9)), OneSou, TwoSou, ThreeSou, FourSou, FiveSou, SixSou, SevenSou, EightSou, NineSou)
-	PinTiles    = append((make([]rune, 9)), OnePin, TwoPin, ThreePin, FourPin, FivePin, SixPin, SevenPin, EightPin, NinePin)
+	WindTiles   = append((make([]rune, 0)), East, South, West, North)
+	DragonTiles = append((make([]rune, 0)), RedDragon, GreenDragon, WhiteDragon)
+	ManTiles    = append((make([]rune, 0)), OneMan, TwoMan, ThreeMan, FourMan, FiveMan, SixMan, SevenMan, EightMan, NineMan)
+	SouTiles    = append((make([]rune, 0)), OneSou, TwoSou, ThreeSou, FourSou, FiveSou, SixSou, SevenSou, EightSou, NineSou)
+	PinTiles    = append((make([]rune, 0)), OnePin, TwoPin, ThreePin, FourPin, FivePin, SixPin, SevenPin, EightPin, NinePin)
 	Partial1    = append(WindTiles, DragonTiles...)
 	Partial2    = append(Partial1, ManTiles...)
 	Partial3    = append(Partial2, SouTiles...)
@@ -110,12 +110,13 @@ func Set() []Tile {
 func GetUnicodeTile(tile Tile) rune {
 	tileValue := tile.value / 4
 	tileCode := SetTiles[tileValue]
-	fmt.Printf("tileValue: %d and code: %v\n", tileValue, tileCode)
+	fmt.Printf("tileValue: %d and code: %q\n", tileValue, tileCode)
 	return tileCode
 }
 
 func main() {
 	Set()
+	GetUnicodeTile(Tile{value: 0})
 	GetUnicodeTile(Tile{value: 0})
 	GetUnicodeTile(Tile{value: 120})
 }
