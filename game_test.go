@@ -1,2 +1,2 @@
 // Package mahjong is a (riichi) mahjong game client.
-package mahjong
+package main
