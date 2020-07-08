@@ -3,6 +3,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -65,19 +67,6 @@ const (
 	NinePin  = '🀡'
 )
 
-var (
-	// Build a set of unicode tiles
-	WindTiles   = append((make([]rune, 0)), East, South, West, North)
-	DragonTiles = append((make([]rune, 0)), RedDragon, GreenDragon, WhiteDragon)
-	ManTiles    = append((make([]rune, 0)), OneMan, TwoMan, ThreeMan, FourMan, FiveMan, SixMan, SevenMan, EightMan, NineMan)
-	SouTiles    = append((make([]rune, 0)), OneSou, TwoSou, ThreeSou, FourSou, FiveSou, SixSou, SevenSou, EightSou, NineSou)
-	PinTiles    = append((make([]rune, 0)), OnePin, TwoPin, ThreePin, FourPin, FivePin, SixPin, SevenPin, EightPin, NinePin)
-	Partial1    = append(WindTiles, DragonTiles...)
-	Partial2    = append(Partial1, ManTiles...)
-	Partial3    = append(Partial2, SouTiles...)
-	SetTiles    = append(Partial3, PinTiles...)
-)
-
 type Tile struct {
 	value int
 }
@@ -95,28 +84,62 @@ type Player struct {
 	discard Discard
 }
 
-func Set() []Tile {
-	// Define a 136 length slice where each slice is equal to its position.
-	set := make([]Tile, 136)
-
-	for i := 0; i < len(set); i++ {
-		set[i] = Tile{value: i}
-	}
-
-	fmt.Printf("Set: %v\n", set)
-	return set
+func SimpleSet() []rune {
+	var (
+		// Build a set of unicode tiles
+		WindTiles   = append((make([]rune, 0)), East, South, West, North)
+		DragonTiles = append((make([]rune, 0)), RedDragon, GreenDragon, WhiteDragon)
+		ManTiles    = append((make([]rune, 0)), OneMan, TwoMan, ThreeMan, FourMan, FiveMan, SixMan, SevenMan, EightMan, NineMan)
+		SouTiles    = append((make([]rune, 0)), OneSou, TwoSou, ThreeSou, FourSou, FiveSou, SixSou, SevenSou, EightSou, NineSou)
+		PinTiles    = append((make([]rune, 0)), OnePin, TwoPin, ThreePin, FourPin, FivePin, SixPin, SevenPin, EightPin, NinePin)
+		Partial1    = append(WindTiles, DragonTiles...)
+		Partial2    = append(Partial1, ManTiles...)
+		Partial3    = append(Partial2, SouTiles...)
+		SetTiles    = append(Partial3, PinTiles...)
+	)
+	return SetTiles
 }
 
-func GetUnicodeTile(tile Tile) rune {
-	tileValue := tile.value / 4
+func FullSet() []int {
+	FullSet := make([]int, 136)
+	for i := 0; i < len(FullSet)/4; i++ {
+		for j := 0; j <= 3; j++ {
+			i := i * 4
+			FullSet[i+j] = i + j
+		}
+	}
+	return FullSet
+}
+
+func GetUnicodeTile(tile int) rune {
+	SetTiles := SimpleSet()
+	tileValue := tile / 4
 	tileCode := SetTiles[tileValue]
-	fmt.Printf("tileValue: %d and code: %q\n", tileValue, tileCode)
 	return tileCode
 }
 
+func ShuffleSet(set []int) []int {
+	ShuffledSet := set
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(ShuffledSet), func(i, j int) { ShuffledSet[i], ShuffledSet[j] = ShuffledSet[j], ShuffledSet[i] })
+	return ShuffledSet
+}
+
 func main() {
-	Set()
-	GetUnicodeTile(Tile{value: 0})
-	GetUnicodeTile(Tile{value: 0})
-	GetUnicodeTile(Tile{value: 120})
+	SimpleSet()
+	fmt.Println("SimpleSet")
+	for _, c := range SimpleSet() {
+		fmt.Printf("%q ", c)
+	}
+	fmt.Println("\nEnd Simpleset")
+	fmt.Println("FullSet")
+	for _, c := range FullSet() {
+		fmt.Printf("%q ", GetUnicodeTile(c))
+	}
+	fmt.Println("\nEnd FullSet")
+	fmt.Println("ShuffledSet")
+	for _, c := range ShuffleSet(FullSet()) {
+		fmt.Printf("%q ", GetUnicodeTile(c))
+	}
+	fmt.Println("\nEnd ShuffledSet")
 }
