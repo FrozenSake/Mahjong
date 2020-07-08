@@ -81,13 +81,14 @@ type Hand struct {
 	tiles map[int]Tile
 }
 
-type Discard struct {
-	tiles map[int]Tile
+type DiscardPile struct {
+	ownersName string
+	tiles      map[int]Tile
 }
 
 type Player struct {
 	hand    Hand
-	discard Discard
+	discard DiscardPile
 }
 
 // SimpleSet compiles slices of Mahjong tiles into a basic 'one of each tile' set.
@@ -147,19 +148,76 @@ func AssignSeats(set []string) []string {
 	return Seats
 }
 
-func Deal() []int {
+func Deal() ([]int, []int, []int, []int, []int, []int, []int) {
 	Tiles := ShuffleSet(FullSet())
-	// Number of Tiles in each wall
-	var EastWall, SouthWall, WestWall, NorthWall = 34, 34, 34, 34
+	var DeadWall []int
+	var EastHand, SouthHand, WestHand, NorthHand []int
+	var DrawWall, DoraIndicators, UraDoraIndicators []int
 	var EastStart, SouthStart, WestStart, NorthStart = 0, 34, 68, 102
+
+	DiceRoll := RollDice(2)
+	WallChoice := DiceRoll % 4
+	WallBreak := 0
+
+	if WallChoice == 1 {
+		WallBreak = EastStart + (DiceRoll * 2)
+	} else if WallChoice == 2 {
+		WallBreak = SouthStart + (DiceRoll * 2)
+	} else if WallChoice == 3 {
+		WallBreak = WestStart + (DiceRoll * 2)
+	} else if WallChoice == 4 {
+		WallBreak = NorthStart + (DiceRoll * 2)
+	}
+
+	for i := 1; i <= 3; i++ {
+		for w := 1; w <= 4; w++ {
+			StartDraw := WallBreak + ((i - 1) * w * 4)
+			EndDraw := StartDraw + 4
+			Dealt := Tiles[StartDraw:EndDraw]
+			if w == 1 {
+				EastHand = append(EastHand, Dealt...)
+			} else if w == 2 {
+				SouthHand = append(SouthHand, Dealt...)
+			} else if w == 3 {
+				WestHand = append(WestHand, Dealt...)
+			} else if w == 4 {
+				NorthHand = append(NorthHand, Dealt...)
+			}
+		}
+	}
+
+	if WallBreak >= 14 {
+		DeadWall = Tiles[WallBreak-14 : WallBreak]
+	} else {
+		remainder := 14 - WallBreak
+		DeadWall = append(Tiles[:WallBreak], Tiles[(len(Tiles)-remainder):]...)
+	}
+
+	DoraIndicators = append(DoraIndicators, DeadWall[5], DeadWall[7], DeadWall[9], DeadWall[11], DeadWall[13])
+	UraDoraIndicators = append(UraDoraIndicators, DeadWall[6], DeadWall[8], DeadWall[10], DeadWall[12], DeadWall[14])
+
+	return DrawWall, DoraIndicators, UraDoraIndicators, EastHand, SouthHand, WestHand, NorthHand
 
 	//Deal Pseudocode
 	//Four Walls: 17x2 Tiles
 	//Roll Dice: 1:East 2:South 3:West 4:North
-	//Roll Dice: Count backwards from the end (17) to dice count.
+	//Roll Dice: Count to dice count.
 	//Begin Deal: 2x2 to East, 2x2 to South, 2x2 to West, 2x2 to North, repeat 3 times (12 tiles)
 	//Dead wall: 7x2, starting from where the deal began.
 	//Dora Indicator: top tile, 3 from the right of the dead wall. (ooooXoo)
+}
+
+func RollDice(num int) int {
+	var dice = []int{1, 2, 3, 4, 5, 6}
+	value := 0
+
+	rand.Seed(time.Now().UnixNano())
+
+	for i := 0; i < num; i++ {
+		value += dice[rand.Intn(len(dice))]
+	}
+
+	return value
 }
 
 func Draw(walls []int) []int {
