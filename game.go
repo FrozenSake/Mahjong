@@ -78,7 +78,7 @@ type Tile struct {
 }
 
 type Hand struct {
-	tiles map[int]Tile
+	tiles []int
 }
 
 type DiscardPile struct {
@@ -87,8 +87,9 @@ type DiscardPile struct {
 }
 
 type Player struct {
-	hand    Hand
+	hand    []int
 	discard DiscardPile
+	seat    string
 }
 
 // SimpleSet compiles slices of Mahjong tiles into a basic 'one of each tile' set.
@@ -169,9 +170,11 @@ func Deal() ([]int, []int, []int, []int, []int, []int, []int) {
 		WallBreak = NorthStart + (DiceRoll * 2)
 	}
 
+	DrawWall = append(Tiles[WallBreak:], Tiles[:WallBreak]...)
+
 	for i := 1; i <= 3; i++ {
 		for w := 1; w <= 4; w++ {
-			StartDraw := WallBreak + ((i - 1) * w * 4)
+			StartDraw := ((i - 1) * w * 4)
 			EndDraw := StartDraw + 4
 			Dealt := Tiles[StartDraw:EndDraw]
 			if w == 1 {
@@ -186,6 +189,8 @@ func Deal() ([]int, []int, []int, []int, []int, []int, []int) {
 		}
 	}
 
+	DrawWall = Tiles[47:]
+
 	if WallBreak >= 14 {
 		DeadWall = Tiles[WallBreak-14 : WallBreak]
 	} else {
@@ -193,8 +198,8 @@ func Deal() ([]int, []int, []int, []int, []int, []int, []int) {
 		DeadWall = append(Tiles[:WallBreak], Tiles[(len(Tiles)-remainder):]...)
 	}
 
-	DoraIndicators = append(DoraIndicators, DeadWall[5], DeadWall[7], DeadWall[9], DeadWall[11], DeadWall[13])
-	UraDoraIndicators = append(UraDoraIndicators, DeadWall[6], DeadWall[8], DeadWall[10], DeadWall[12], DeadWall[14])
+	DoraIndicators = append(DoraIndicators, DeadWall[4], DeadWall[6], DeadWall[8], DeadWall[10], DeadWall[12])
+	UraDoraIndicators = append(UraDoraIndicators, DeadWall[5], DeadWall[7], DeadWall[9], DeadWall[11], DeadWall[13])
 
 	return DrawWall, DoraIndicators, UraDoraIndicators, EastHand, SouthHand, WestHand, NorthHand
 
@@ -220,10 +225,11 @@ func RollDice(num int) int {
 	return value
 }
 
-func Draw(walls []int) []int {
-	//Take first tile out of set
-	//Add it to player hand
-	//Return remaining set
+func Draw(tiles []int) ([]int, []int) {
+	drawn := tiles[:1]
+	tiles = tiles[1:]
+
+	return drawn, tiles
 }
 
 func Discard() {
@@ -257,6 +263,54 @@ func CallTsumo() {
 func main() {
 	SimpleSet()
 
+	east := Player{seat: "East"}
+	south := Player{seat: "South"}
+	west := Player{seat: "West"}
+	north := Player{seat: "North"}
+	var drawWall, doraIndicators, uraDoraIndicators []int
+
+	//DrawWall, DoraIndicators, UraDoraIndicators, EastHand, SouthHand, WestHand, NorthHand
+	drawWall, doraIndicators, uraDoraIndicators, east.hand, south.hand, west.hand, north.hand = Deal()
+
+	// DEEBUG / OUTPUT FOR VERIFICATION
+
+	fmt.Println("Dealt Game")
+	fmt.Printf("drawWall: ")
+	for _, c := range drawWall {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("doraIndicators: ")
+	for _, c := range doraIndicators {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("uraDoraIndicators: ")
+	for _, c := range uraDoraIndicators {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("east: ")
+	for _, c := range east.hand {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("south: ")
+	for _, c := range south.hand {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("west: ")
+	for _, c := range west.hand {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\n")
+	fmt.Printf("north: ")
+	for _, c := range north.hand {
+		fmt.Printf("%q", GetUnicodeTile(c))
+	}
+	fmt.Printf("\nEnd Dealt Game\n")
+
 	fmt.Println("SimpleSet")
 	for _, c := range SimpleSet() {
 		fmt.Printf("%q", c)
@@ -275,7 +329,7 @@ func main() {
 	}
 	fmt.Println("\nEnd ShuffledSet")
 
-	fmt.Printf("Man Red Five: %q\n", GetUnicodeTile(MAN_RED_FIVE))
-	fmt.Printf("Pin Red Five: %q\n", GetUnicodeTile(PIN_RED_FIVE))
+	fmt.Printf("Man Red Five: %q ", GetUnicodeTile(MAN_RED_FIVE))
+	fmt.Printf("Pin Red Five: %q ", GetUnicodeTile(PIN_RED_FIVE))
 	fmt.Printf("Sou Red Five: %q\n", GetUnicodeTile(SOU_RED_FIVE))
 }
