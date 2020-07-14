@@ -79,6 +79,7 @@ type Tile struct {
 
 type Hand struct {
 	tiles []int
+	open  bool
 }
 
 type DiscardPile struct {
